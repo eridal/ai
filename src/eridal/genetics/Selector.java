@@ -19,10 +19,8 @@ public interface Selector<C extends Creature> {
      */
     public static <C extends Creature> Selector<C> TOURNAMENT() {
         return (creatures, problem) -> Creature.factory(creatures.size(), () -> {
-            final int rx = Rand.integer(creatures.size());
-            final int ry = Rand.integer(creatures.size());
-            final C x = creatures.get(rx);
-            final C y = creatures.get(ry);
+            final C x = Rand.element(creatures);
+            final C y = Rand.element(creatures);
             return problem.best(x, y);
         });
     }
