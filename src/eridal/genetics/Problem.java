@@ -2,6 +2,7 @@ package eridal.genetics;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public interface Problem<C extends Creature> {
@@ -34,6 +35,19 @@ public interface Problem<C extends Creature> {
                 .get();
     }
 
+    public default List<C> bestOf(List<C> elite, List<C> creatures) {
+
+        if (elite.isEmpty()) {
+            return creatures;
+        }
+
+        final List<C> survivors = creatures.stream()
+                .sorted(comparator())
+                .limit(creatures.size() - elite.size())
+                .collect(Collectors.toList());
+        survivors.addAll(elite);
+        return survivors;
+    }
     /**
      * Returns `true` if the {@link Creature} have a fitness
      * value that exceeds the given fitness target
@@ -62,7 +76,7 @@ public interface Problem<C extends Creature> {
             }
 
             @Override public Comparator<C> comparator() {
-                return Comparator.comparing(Creature::fitness);
+                return Comparator.<C, Double>comparing(Creature::fitness).reversed();
             }
         };
     }
@@ -84,7 +98,7 @@ public interface Problem<C extends Creature> {
             }
 
             @Override public Comparator<C> comparator() {
-                return Comparator.<C, Double>comparing(Creature::fitness).reversed();
+                return Comparator.comparing(Creature::fitness);
             }
         };
     }

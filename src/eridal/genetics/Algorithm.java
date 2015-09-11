@@ -3,7 +3,9 @@ package eridal.genetics;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class Algorithm<C extends Creature> {
@@ -14,6 +16,7 @@ public final class Algorithm<C extends Creature> {
     private Breeder<C> breeder;
     private Mutator<C> mutator;
     private Chain<C> chain;
+    private Elite<C> elite;
     private Stop<C> stop;
 
     public Algorithm<C> init(final Init<C> init) {
@@ -49,10 +52,19 @@ public final class Algorithm<C extends Creature> {
         return this;
     }
 
+    public Algorithm<C> elite(Elite<C> elite) {
+        this.elite = elite;
+        return this;
+    }
+
     @SafeVarargs
     public final Algorithm<C> stop(final Stop<C> ...stops) {
         this.stop = Stop.ANY(stops);
         return this;
+    }
+
+    public Algorithm<C> stop(Predicate<C> when) {
+        return stop(Stop.WHEN(when));
     }
 
     public Algorithm<C> stop(final double targetFitness) {
@@ -86,6 +98,10 @@ public final class Algorithm<C extends Creature> {
             problem = Problem.MAXIMIZE();
         }
 
+        if (null == elite) {
+            elite = Elite.NONE();
+        }
+
         if (null == stop) {
             stop = Stop.TIME(30, TimeUnit.SECONDS);
         }
@@ -93,6 +109,7 @@ public final class Algorithm<C extends Creature> {
         final long start = System.currentTimeMillis();
 
         List<C> creatures = init.create();
+        List<C> bests;
 
         for (long loop = 0; ; loop++) {
 
@@ -102,7 +119,10 @@ public final class Algorithm<C extends Creature> {
             flow = breeder.breed(flow);
             flow = mutator.mutate(flow);
 
-            creatures = Creature.collect(flow);
+            bests = elite.save(creatures, problem);
+
+            creatures = flow.collect(Collectors.toList());
+            creatures = problem.bestOf(bests, creatures);
 
             if (stop.stop(creatures, problem)) {
 
@@ -118,8 +138,9 @@ public final class Algorithm<C extends Creature> {
             }
 
             if (null != chain) {
-                final C best = problem.best(creatures);
-                chain.tap(loop, creatures, best);
+                final C best = problem.best(bests.isEmpty() ? creatures : bests);
+                final C worst = problem.worst(creatures);
+                chain.tap(loop, creatures, best, worst);
             }
         }
     }

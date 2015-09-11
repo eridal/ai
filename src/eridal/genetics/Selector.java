@@ -18,11 +18,11 @@ public interface Selector<C extends Creature> {
      * 
      */
     public static <C extends Creature> Selector<C> TOURNAMENT() {
-        return (creatures, problem) -> Creature.factory(creatures.size(), () -> {
+        return (creatures, problem) -> Stream.generate(() -> {
             final C x = Rand.element(creatures);
             final C y = Rand.element(creatures);
             return problem.best(x, y);
-        });
+        }).limit(creatures.size());
     }
 
     /**
@@ -42,7 +42,7 @@ public interface Selector<C extends Creature> {
                 px[i] += px[i - 1];
             }
 
-            return Helper.roulete(creatures, px);
+            return roulete(creatures.size(), creatures, px);
         };
     }
 
@@ -89,21 +89,27 @@ public interface Selector<C extends Creature> {
                 px[i] = px[i] / sum + px[i - 1]; 
             }
 
-            return Stream.concat(winners.stream(), Helper.roulete(creatures, px));
+            return Stream.concat(
+                winners.stream().limit(creatures.size()),
+                roulete(creatures.size() - winners.size(), creatures, px)
+            );
         };
     }
 
-    static class Helper {
-        public static <C extends Creature> Stream<C> roulete(final List<C> creatures, final double[] px) {
-            return Creature.factory(creatures.size(), () -> {
-                final double r = Rand.real();
-                for (int i = 0; i < px.length; i++) {
-                    if (px[i] > r) {
-                        return creatures.get(i);
-                    }
-                }
-                return creatures.get(creatures.size() - 1);
-            });
+    public static <C extends Creature> Stream<C> roulete(final int size, final List<C> creatures, final double[] px) {
+
+        if (size <= 0) {
+            return Stream.empty();
         }
+
+        return Stream.generate(() -> {
+            final double r = Rand.real();
+            for (int i = 0; i < px.length; i++) {
+                if (px[i] > r) {
+                    return creatures.get(i);
+                }
+            }
+            return creatures.get(creatures.size() - 1);
+        }).limit(size);
     }
 }

@@ -3,6 +3,7 @@ package eridal.genetics;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 public interface Stop<C extends Creature> {
 
@@ -83,5 +84,12 @@ public interface Stop<C extends Creature> {
         return (creatures, problem) -> Arrays.stream(stops)
                 .allMatch(s -> s.stop(creatures, problem))
         ;
+    }
+
+    /**
+     * Stops executing when the given condition meets
+     */
+    public static <C extends Creature> Stop<C> WHEN(final Predicate<C> predicate) {
+        return (creatures, problem) -> predicate.test(problem.best(creatures));
     }
 }
