@@ -91,7 +91,7 @@ public final class Algorithm<C extends Creature> {
         Objects.requireNonNull(mutator, "Mutator requred");
 
         if (null == selector) {
-            selector = Selector.TOURNAMENT();
+            selector = Selector.CSNE();
         }
 
         if (null == problem) {
