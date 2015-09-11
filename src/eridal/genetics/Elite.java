@@ -29,4 +29,12 @@ public interface Elite<C extends Creature> {
                 .collect(Collectors.toList())
                 ;
     }
+
+    public static <C extends Creature> Elite<C> BEST(final double ratio) {
+        return (creatures, problem) -> creatures.stream()
+            .sorted(problem.comparator())
+            .limit((int) Math.max(1, creatures.size() * ratio))
+            .collect(Collectors.toList())
+            ;
+    }
 }
