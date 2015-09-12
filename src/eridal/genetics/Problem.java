@@ -3,6 +3,7 @@ package eridal.genetics;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 public interface Problem<C extends Creature> {
@@ -37,12 +38,12 @@ public interface Problem<C extends Creature> {
             return creatures;
         }
 
-        final List<C> survivors = creatures.stream()
+        final int size = creatures.size();
+
+        return Stream.concat(elite.stream(), creatures.stream())
                 .sorted(comparator())
-                .limit(creatures.size() - elite.size())
+                .limit(size)
                 .collect(Collectors.toList());
-        survivors.addAll(elite);
-        return survivors;
     }
     /**
      * Returns `true` if the {@link Creature} have a fitness

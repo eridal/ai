@@ -147,8 +147,7 @@ public final class Algorithm<C extends Creature> {
 
             if (null != chain) {
                 final C best = problem.best(bests.isEmpty() ? creatures : bests);
-                final C worst = problem.worst(creatures);
-                chain.tap(loop, creatures, best, worst);
+                chain.tap(loop, creatures, best);
             }
         }
     }
