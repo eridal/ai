@@ -57,6 +57,14 @@ public final class Algorithm<C extends Creature> {
         return this;
     }
 
+    public Algorithm<C> elite(final double ratio) {
+        return elite(Elite.BEST(ratio));
+    }
+
+    public Algorithm<C> elite(final int size) {
+        return elite(Elite.BEST(size));
+    }
+
     @SafeVarargs
     public final Algorithm<C> stop(final Stop<C> ...stops) {
         this.stop = Stop.ANY(stops);
