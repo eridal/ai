@@ -15,8 +15,8 @@ public interface Mutator<C extends Creature> {
     /**
      * 
      */
-    public default Stream<C> mutate(final Stream<? super C> population) {
-        return population.map(creature -> mutate((C) creature));
+    public default Stream<C> mutate(final Stream<C> population) {
+        return population.map(this::mutate);
     }
 
     /**
