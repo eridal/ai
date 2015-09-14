@@ -14,6 +14,11 @@ public interface Selector<C extends Creature> {
      */
     public Stream<C> select(List<C> creatures, Problem<C> problem);
 
+
+    public static <C extends Creature> Selector<C> RANKING() {
+        return (creatures, problem) -> creatures.stream().sorted(problem.comparator());
+    }
+
     /**
      * 
      */
