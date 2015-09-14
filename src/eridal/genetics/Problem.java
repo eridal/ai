@@ -22,14 +22,14 @@ public interface Problem<C extends Creature> {
      * Returns the best {@link Creature} for this problem
      */
     public default C best(List<C> creatures) {
-        return creatures.stream().max(comparator()).get();
+        return creatures.stream().min(comparator()).get();
     }
 
     /**
      * Returns the worst {@link Creature} for this problem
      */
     public default C worst(List<C> creatures) {
-        return creatures.stream().min(comparator()).get();
+        return creatures.stream().max(comparator()).get();
     }
 
     public default List<C> bestOf(List<C> elite, List<C> creatures) {
