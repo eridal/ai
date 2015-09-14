@@ -1,10 +1,7 @@
 package eridal.genetics;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
-
-import eridal.genetics.utils.Rand;
 
 public interface Breeder<C extends Creature> {
 
@@ -22,12 +19,11 @@ public interface Breeder<C extends Creature> {
      */
     public default Stream<C> breed(final Stream<C> parents) {
 
-        final List<C> creatures = parents.collect(Collectors.toList());
+        final AtomicReference<C> prev = new AtomicReference<>();
 
-        return Stream.generate(() -> {
-            final C x = Rand.element(creatures);
-            final C y = Rand.element(creatures);
-            return breed(x, y);
-        }).limit(creatures.size());
+        return parents.map(y -> {
+            final C x = prev.getAndSet(y);
+            return null == x ? y : breed(x, y);
+        });
     }
 }
