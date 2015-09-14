@@ -40,7 +40,7 @@ public interface Problem<C extends Creature> {
 
         final int size = creatures.size();
 
-        return Stream.concat(elite.stream(), creatures.stream())
+        return Stream.concat(creatures.stream(), elite.stream())
                 .sorted(comparator())
                 .limit(size)
                 .collect(Collectors.toList());
