@@ -62,6 +62,12 @@ public final class Algorithm<C extends Creature> {
     }
 
     public Algorithm<C> elite(final int size) {
+        if (size == 0) {
+            return elite(Elite.NONE());
+        }
+        if (size == 1) {
+            return elite(Elite.BEST());
+        }
         return elite(Elite.BEST(size));
     }
 
