@@ -1,8 +1,8 @@
-package eridal.genetics;
+package eridal.ai.genetic;
 
 import java.util.stream.Stream;
 
-import eridal.genetics.utils.Rand;
+import eridal.ai.utils.Rand;
 
 
 public interface Mutator<C extends Creature> {

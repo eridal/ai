@@ -1,4 +1,4 @@
-package eridal.genetics;
+package eridal.ai.genetic;
 
 import java.util.Arrays;
 import java.util.Collections;
