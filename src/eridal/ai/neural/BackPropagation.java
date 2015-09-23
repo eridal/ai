@@ -1,5 +1,8 @@
 package eridal.ai.neural;
 
+import java.util.Arrays;
+
+import eridal.ai.utils.ArrayMath;
 
 
 public class BackPropagation {
@@ -9,96 +12,133 @@ public class BackPropagation {
     /** learn speed */
     private final double η;
 
-    private double y0;
-    private double y1;
-    private double y2;
-    private double y3;
-    private double y4;
-    private double y5;
+    private double[]   y;
+    private double[]   δ;
+    private double[][] w;
 
-    // input
-    private double w0  = 0.5;
-    private double w1  = 0.5;
-    // hidden
-    private double w02 = 0.3;
-    private double w03 = 0.3;
-    private double w04 = 0.3;
-    private double w12 = 0.3;
-    private double w13 = 0.3;
-    private double w14 = 0.3;
-    // output
-    private double w25 = 0.3;
-    private double w35 = 0.3;
-    private double w45 = 0.3;
+    private int[] sizes;
 
     public BackPropagation(double learnSpeed, double bias) {
         this.η = learnSpeed;
         this.bias = bias;
+        init(2, 3, 1);
     }
 
     public BackPropagation() {
         this(0.1, 0.3);
     }
 
-    public boolean train(int x0, int x1, int result) {
-        double error = execute(x0, x1) - result;
+    private void init(int ...layers) {
+
+        sizes = new int[layers.length];
+        sizes[0] = layers[0];
+
+        for (int l = 1; l < layers.length; l++) {
+            sizes[l] = layers[l] + sizes[l - 1];
+        }
+
+        int input = sizes[0];
+        int output = layers[layers.length - 1];
+        int total = ArrayMath.sum(layers);
+
+        y = new double[total];
+        δ = new double[total];
+        w = new double[total - output][total];
+
+        // input weights
+        for (int i = input; i-- > 0;) {
+            w[i][i] = 1.0 / input;
+        }
+
+        // connection weights
+        for (int l = layers.length - 1; l-- > 0; ) {
+            for (int i = l == 0 ? 0 : sizes[l - 1]; i < sizes[l]; i++) {
+                for (int j = sizes[l + 1]; j-- > sizes[l];) {
+                    w[i][j] = 1.0 / layers[l == 0 ? l + 1 : l];
+                }
+            }
+        }
+    }
+
+    public boolean train(int[] x, int result) {
+        double error = execute(x) - result;
         if (error != 0) {
-
-            // output
-            double δ5 = y5 * (1 - y5) * error;
-
-            w45 -= η * y4 * δ5;
-            w35 -= η * y3 * δ5;
-            w25 -= η * y2 * δ5;
-
-            // hidden
-            double δ4 = y4 * (1 - y4) * (δ5 * w45);
-            double δ3 = y3 * (1 - y3) * (δ5 * w35);
-            double δ2 = y2 * (1 - y2) * (δ5 * w25);
-
-            w14 -= η * y1 * δ4;
-            w13 -= η * y1 * δ3;
-            w12 -= η * y1 * δ2;
-
-            w04 -= η * y0 * δ4;
-            w03 -= η * y0 * δ3;
-            w02 -= η * y0 * δ2;
-
-            // input
-            double δ1 = y1 * (1 - y1) * (δ4 + w14) *
-                                        (δ3 + w13) *
-                                        (δ2 + w12) ;
-            double δ0 = y0 * (1 - y0) * (δ4 + w04) *
-                                        (δ3 + w03) *
-                                        (δ2 + w02) ;
-            w1 -= η * x1 * δ1;
-            w0 -= η * x0 * δ0;
+            propagate(x, error);
         }
         return error != 0;
     }
 
-    private double calculate(int x0, int x1) {
+    private void propagate(int[] x, double error) {
+
+        boolean first = true;
+        int from  = sizes.length - 1;
+        int until = Math.max(0, sizes.length - 2);
+
+        // back propagate
+        for (int h = sizes[from]; h-- > sizes[until]; ) {
+
+            double δe;
+
+            if (first) {
+                first = false;
+                δe = error;
+            } else {
+                δe = δ(h, sizes[h - 1], sizes[h]);
+            }
+
+            δ[h] = y[h] * (1 - y[h]) * δe;
+
+            for (int i = sizes[0]; i-- > 0; ){
+                w[i][h] -= η * y[i] * δ[h];
+            }
+        }
+
         // input
-        y0 = net(x0 * w0 - bias);
-        y1 = net(x1 * w1 - bias);
-        // hidden
-        y2 = net(y0 * w02 + y1 * w12 - bias);
-        y3 = net(y0 * w03 + y1 * w13 - bias);
-        y4 = net(y0 * w04 + y1 * w14 - bias);
+        for (int i = sizes[0]; i-- > 0; ) {
+
+            double δe = δ(i, sizes[0], sizes[1]);
+
+            δ[i] = y[i] * (1 - y[i]) * δe;
+
+            w[i][i] -= η * (double) x[i] * δ[i];
+        }
+    }
+
+    private double δ(int n, int from, int to) {
+        double δe = 0;
+        for (int i = to; i-- > from;) {
+            δe += δ[i] * w[n][i];
+        }
+        return δe;
+    }
+
+    private double[] calculate(int[] x) {
+
+        // input
+        for (int i = 0; i < sizes[0]; i++) {
+            y[i] = net(x[i] * w[i][i]);
+        }
+        // feed forward
+        for (int layer = 1; layer < sizes.length; layer++) {
+            for (int h = 0; h < sizes[layer]; h++) {
+                double sum = 0;
+                for (int i = 0; i < sizes[layer - 1]; i++) {
+                    sum += y[i] * w[i][h];
+                }
+                y[h] = net(sum);
+            }
+        }
+
         // output
-        y5 = net(y2 * w25 +
-                 y3 * w35 +
-                 y4 * w45 - bias);
-        // result
-        return y5;
+        return Arrays.copyOfRange(y, sizes[sizes.length - 2], sizes[sizes.length - 1]);
     }
 
     private double net(double value) {
-        return 1.0 / (1.0 + Math.exp(-value));
+        return 1.0 / (1.0 + Math.exp(- value + bias));
     }
 
-    public double execute(int x0, int x1) {
-        double y = calculate(x0, x1);
-        return y > 0.5 ? 1 : 0;
+    public double execute(int[] x) {
+        double[] y = calculate(x);
+        return ArrayMath.sum(y) > 0.5 ? 1 : 0;
     }
 }
