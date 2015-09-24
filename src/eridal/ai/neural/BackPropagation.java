@@ -12,48 +12,51 @@ public class BackPropagation {
     /** learn speed */
     private final double η;
 
-    private double[]   y;
-    private double[]   δ;
-    private double[][] w;
+    /** neuron outputs */
+    private final double[] y;
 
-    private int[] sizes;
+    /** errors */
+    private final double[] δ;
 
-    public BackPropagation(double learnSpeed, double bias) {
+    /** connection weights */
+    private final double[][] w;
+
+    /** layer sizes */
+    private final int[] layersSize;
+
+    /** layer sizes */
+    private final int[] layersMax;
+
+    public BackPropagation(double learnSpeed, double bias, int[] layers) {
+
         this.η = learnSpeed;
         this.bias = bias;
-        init(2, 3, 1);
-    }
 
-    public BackPropagation() {
-        this(0.1, 0.3);
-    }
+        layersSize = layers;
 
-    private void init(int ...layers) {
+        layersMax = new int[layers.length];
+        layersMax[0] = layers[0];
 
-        sizes = new int[layers.length];
-        sizes[0] = layers[0];
-
-        for (int l = 1; l < layers.length; l++) {
-            sizes[l] = layers[l] + sizes[l - 1];
+        for (int i = 1; i < layers.length; i++) {
+            layersMax[i] = layersMax[i - 1] + layers[i];
         }
 
-        int input = sizes[0];
-        int output = layers[layers.length - 1];
-        int total = ArrayMath.sum(layers);
+        int output = layersSize[layers.length - 1];
+        int total  = layersMax [layers.length - 1];
 
         y = new double[total];
         δ = new double[total];
         w = new double[total - output][total];
 
         // input weights
-        for (int i = input; i-- > 0;) {
-            w[i][i] = 1.0 / input;
+        for (int i = layersMax[0]; i-- > 0;) {
+            w[i][i] = 1.0 / layersMax[0];
         }
 
-        // connection weights
-        for (int l = layers.length - 1; l-- > 0; ) {
-            for (int i = l == 0 ? 0 : sizes[l - 1]; i < sizes[l]; i++) {
-                for (int j = sizes[l + 1]; j-- > sizes[l];) {
+        // default connection weights
+        for (int l = layersMax.length - 1; l-- > 0; ) {
+            for (int i = l == 0 ? 0 : layersMax[l - 1]; i < layersMax[l]; i++) {
+                for (int j = layersMax[l + 1]; j-- > layersMax[l];) {
                     w[i][j] = 1.0 / layers[l == 0 ? l + 1 : l];
                 }
             }
@@ -71,66 +74,85 @@ public class BackPropagation {
     private void propagate(int[] x, double error) {
 
         boolean first = true;
-        int from  = sizes.length - 1;
-        int until = Math.max(0, sizes.length - 2);
 
-        // back propagate
-        for (int h = sizes[from]; h-- > sizes[until]; ) {
+        // back propagate until layer 1
+        for (int l = layersSize.length; l-- > 1;) {
 
-            double δe;
+            int kMin = layersMax[l - 1] - layersSize[l - 1];
+            int kMax = layersMax[l - 0] - layersSize[l - 0];
 
-            if (first) {
-                first = false;
-                δe = error;
-            } else {
-                δe = δ(h, sizes[h - 1], sizes[h]);
+            for (int n = layersMax[l]; n-- > layersMax[l - 1]; ) {
+
+                double δn;
+
+                if (first) {
+                    δn = error;
+                } else {
+                    δn = δ(n, l + 1);
+                }
+
+                δ[n] = y[n] * (1 - y[n]) * δn;
+
+                for (int k = kMax; k-- > kMin; ){
+                    w[k][n] -= η * y[k] * δ[n];
+                }
             }
 
-            δ[h] = y[h] * (1 - y[h]) * δe;
-
-            for (int i = sizes[0]; i-- > 0; ){
-                w[i][h] -= η * y[i] * δ[h];
-            }
+            first = false;
         }
 
         // input
-        for (int i = sizes[0]; i-- > 0; ) {
+        for (int n = layersMax[0]; n-- > 0; ) {
 
-            double δe = δ(i, sizes[0], sizes[1]);
+            double δn = δ(n, 1);
 
-            δ[i] = y[i] * (1 - y[i]) * δe;
+            δ[n] = y[n] * (1 - y[n]) * δn;
 
-            w[i][i] -= η * (double) x[i] * δ[i];
+            w[n][n] -= η * (double) x[n] * δ[n];
         }
     }
 
-    private double δ(int n, int from, int to) {
-        double δe = 0;
-        for (int i = to; i-- > from;) {
-            δe += δ[i] * w[n][i];
+    private double δ(int n, int l) {
+
+        int min = layersMax[l - 1];
+        int max = layersMax[l];
+
+        double δn = 0;
+
+        for (int k = max; k-- > min;) {
+            δn += δ[k] * w[n][k];
         }
-        return δe;
+
+        return δn;
     }
 
     private double[] calculate(int[] x) {
 
         // input
-        for (int i = 0; i < sizes[0]; i++) {
+        for (int i = 0; i < layersMax[0]; i++) {
             y[i] = net(x[i] * w[i][i]);
         }
+
         // feed forward
-        for (int layer = 1; layer < sizes.length; layer++) {
-            for (int h = 0; h < sizes[layer]; h++) {
+        for (int l = 1; l < layersMax.length; l++) {
+
+            int min = layersMax[l - 1] - layersSize[l - 1];
+            int max = layersMax[l - 0] - layersSize[l - 0];
+
+            for (int n = layersMax[l - 1]; n < layersMax[l]; n++) {
                 double sum = 0;
-                for (int i = 0; i < sizes[layer - 1]; i++) {
-                    sum += y[i] * w[i][h];
+                for (int k = min; k < max; k++) {
+                    sum += y[k] * w[k][n];
                 }
-                y[h] = net(sum);
+                y[n] = net(sum);
             }
         }
 
-        // output
-        return Arrays.copyOfRange(y, sizes[sizes.length - 2], sizes[sizes.length - 1]);
+        // output the last layer
+        int i = layersMax[layersMax.length - 2];
+        int j = layersMax[layersMax.length - 1];
+
+        return Arrays.copyOfRange(y, i, j);
     }
 
     private double net(double value) {
