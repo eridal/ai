@@ -44,7 +44,7 @@ public class Layer implements Iterable<Neuron> {
 
     @Override public String toString() {
         final char type = null == prev ? INPUT : null == next ? OUTPUT : HIDDEN;
-        return String.format("Layer(level=%d neurons=%d type=%c)", level(), neurons.length, type);
+        return String.format("Layer(level:%d type:%c neurons:%d)", level(), type, neurons.length);
     }
 
     public Layer prev() {

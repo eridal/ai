@@ -1,10 +1,13 @@
 package eridal.ai.neural;
 
+import eridal.ai.utils.Filter;
+
 public class NetworkBuilder {
 
     private Squash sq = Squashs.SIGMOID;
-    private Threshold th = Thresholds.SPLIT;
+    private Filter filter;
 
+    private double Θ = 0;
     private int[] sizes;
 
     public NetworkBuilder squash(Squash sq) {
@@ -12,8 +15,13 @@ public class NetworkBuilder {
         return this;
     }
 
-    public NetworkBuilder threshold(Threshold th) {
-        this.th = th;
+    public NetworkBuilder filter(Filter filter) {
+        this.filter = filter;
+        return this;
+    }
+
+    public NetworkBuilder bias(double Θ) {
+        this.Θ = Θ;
         return this;
     }
 
@@ -31,7 +39,7 @@ public class NetworkBuilder {
             in = layer;
         }
 
-        return new NetworkImpl(in, out, th);
+        return new NetworkImpl(in, out, filter);
     }
 
     private Layer buildLayers() {
@@ -46,7 +54,7 @@ public class NetworkBuilder {
 
             while (size-- > 0) {
 
-                final Neuron n = new Neuron(id++, sq);
+                final Neuron n = new Neuron(id++, Θ, sq);
 
                 if (null != prev) {
                     for (Neuron p : prev.neurons) {
@@ -65,7 +73,6 @@ public class NetworkBuilder {
             }
 
             prev = layer;
-            layer = new Layer(neurons, layer);
         }
 
         return layer;

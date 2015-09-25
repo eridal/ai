@@ -1,25 +1,26 @@
 package eridal.ai.neural;
 
+import eridal.ai.utils.Filter;
 
 class NetworkImpl implements Network {
 
     final Layer input;
     final Layer output;
-    final Threshold th;
+    final Filter filter;
 
-    public NetworkImpl(Layer input, Layer output, Threshold th) {
+    public NetworkImpl(Layer input, Layer output, Filter filter) {
         this.input = input;
         this.output = output;
-        this.th = th;
+        this.filter = filter;
     }
 
     public double[] execute(double... x) {
 
         double[] y = input.input(x);
 
-        if (null != th) {
+        if (null != filter) {
             for (int i = y.length; i-- > 0;) {
-                y[i] = th.apply(y[i]);
+                y[i] = filter.apply(y[i]);
             }
         }
 
