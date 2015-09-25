@@ -2,6 +2,18 @@ package eridal.ai.neural;
 
 public abstract class Squashs {
 
+    public static final Squash IDENTITY = new Squash() {
+
+        @Override public double activate(double x) {
+            return x;
+        }
+
+        @Override public double error(double y) {
+            return y;
+        }
+
+    };
+
     public static final Squash SIGMOID = new Squash() {
 
         @Override public double activate(double x) {
