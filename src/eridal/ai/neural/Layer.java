@@ -5,10 +5,11 @@ import java.util.InputMismatchException;
 public class Layer {
 
     final Neuron[] neurons;
+
     final double[] y;
 
-    Layer prev;
-    Layer next;
+    private Layer prev;
+    private Layer next;
 
     public Layer(Neuron[] neurons) {
         this.neurons = neurons;
@@ -19,6 +20,14 @@ public class Layer {
         this(neurons);
         this.prev = prev;
         prev.next = this;
+    }
+
+    public Layer prev() {
+        return prev;
+    }
+
+    public Layer next() {
+        return next;
     }
 
     public boolean isInput() {
@@ -35,14 +44,14 @@ public class Layer {
             throw new InputMismatchException();
         }
 
+        // activate neurons
         for (int k = neurons.length; k-- > 0; ) {
             y[k] = neurons[k].input(x[k]);
         }
 
         double[] result = y;
 
-        // feed forward
-
+        // and feed forward
         for (Layer layer = next; null != layer; layer = layer.next) {
             result = layer.activate();
         }
@@ -55,5 +64,37 @@ public class Layer {
             y[k] = neurons[k].activate();
         }
         return y;
+    }
+
+    public double error(double η, double[] e) {
+
+        if (neurons.length != e.length) {
+            throw new InputMismatchException();
+        }
+
+        double δe = 0;
+
+        // calculate errors
+        for (int k = neurons.length; k-- > 0; ) {
+            δe += neurons[k].error(η, e[k]);
+        }
+
+        // propagate backwards
+        for (Layer layer = prev; null != layer; layer = layer.prev) {
+            δe += layer.propagate(η);
+        }
+
+        return δe;
+    }
+
+    public double propagate(double η) {
+
+        double δe = 0;
+
+        for (int k = neurons.length; k-- > 0; ) {
+            δe += neurons[k].propagate(η);
+        }
+
+        return δe;
     }
 }

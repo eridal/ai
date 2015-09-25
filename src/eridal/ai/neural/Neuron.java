@@ -5,39 +5,83 @@ import java.util.List;
 
 public class Neuron {
 
+    /** output  */
     private double y;
+
+    /** weights */
     private double w;
 
-    /*
+    /** error   */
     private double δ;
-    private double ε;
-    */
 
-    private List<Synapse> synapses = new ArrayList<>();
+    private Squash fn;
 
-    public Neuron() {
-        this(1.0);
+    private List<Synapse> forward = new ArrayList<>();
+    private List<Synapse> backward = new ArrayList<>();
+
+    public Neuron(Squash fn) {
+        this(fn, 1.0);
     }
 
-    public Neuron(double w) {
+    final int id;
+    static int ID;
+
+    public Neuron(Squash fn, double w) {
+        this.id = ID++;
+        this.fn = fn;
         this.w = w;
     }
 
-    public void connect(Neuron in, double w) {
-        synapses.add(new Synapse(in, this, w));
+    public void connect(Neuron n, double w) {
+        Synapse s = new Synapse(this, n, w);
+        forward.add(s);
+        n.backward.add(s);
     }
 
     public double input(double x) {
-        return  y = w * x;
+        return y = fn.activate(w * x);
     }
 
     public double activate() {
-        return y = synapses.stream()
-                .mapToDouble(Synapse::activate)
-                .sum();
+        double x = 0;
+        for (Synapse s : backward) {
+            x += s.activate();
+        }
+        return input(x);
+    }
+
+    public double error(double η, double e) {
+
+        δ = fn.error(y) * e;
+
+        if (backward.isEmpty()) {
+            w -= η * y * δ;
+        }
+        else {
+            for (Synapse s : backward) {
+                s.propagate(η);
+            }
+        }
+
+        return δ;
+    }
+
+    public double propagate(double η) {
+
+        double e = 0;
+
+        for (Synapse s : forward) {
+            e += s.error();
+        }
+
+        return error(η, e);
     }
 
     public double output() {
         return y;
+    }
+
+    public double error() {
+        return δ;
     }
 }

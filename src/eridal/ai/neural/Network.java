@@ -1,11 +1,12 @@
 package eridal.ai.neural;
 
+
 public class Network {
 
     private Layer input;
     private Layer output;
 
-    public Network(int ...layers) {
+    public Network(Squash fn, int ...layers) {
 
         Layer prev = null;
 
@@ -16,11 +17,11 @@ public class Network {
 
             while (size-- > 0) {
 
-                final Neuron n = new Neuron(w);
+                final Neuron n = new Neuron(fn, w);
 
                 if (null != prev) {
                     for (Neuron p : prev.neurons) {
-                        n.connect(p, w);
+                        p.connect(n, w);
                     }
                 }
 
@@ -38,7 +39,7 @@ public class Network {
         output = prev;
     }
 
-    public Network(int[] layers, double[][] weigths) {
+    public Network(Squash fn, int[] layers, double[][] weigths) {
 
         Layer prev = null;
 
@@ -46,20 +47,21 @@ public class Network {
 
             final Neuron[] neurons = new Neuron[layers[l]];
 
-            for (int k = layers[l]; k-- > 0; ) {
+            for (int n = layers[l]; n-- > 0; ) {
 
-                final Neuron n = new Neuron(weigths[l][k]);
+                final Neuron neuron = l == 0 ? new Neuron(fn, weigths[l][n])
+                                             : new Neuron(fn);
 
-                if (null != prev) {
-                    for (Neuron p : prev.neurons) {
-                        n.connect(p, weigths[l][k]);
+                if (l > 0) {
+                    for (int p = 0; p < prev.neurons.length; p++) {
+                        neuron.connect(prev.neurons[p], weigths[l][n + p]);
                     }
                 }
 
-                neurons[k] = n;
+                neurons[n] = neuron;
             }
 
-            if (null == prev) {
+            if (l == 0) {
                 prev = input = new Layer(neurons);
             }
             else {
@@ -70,7 +72,11 @@ public class Network {
         output = prev;
     }
 
-    public double[] input(double ...x) {
+    public double[] execute(double ...x) {
         return input.input(x);
+    }
+
+    public double propagate(double η, double ...e) {
+        return output.error(η, e);
     }
 }
