@@ -9,7 +9,7 @@ public abstract class Squashs {
         }
 
         @Override public double error(double y) {
-            return y;
+            return 1;
         }
 
     };

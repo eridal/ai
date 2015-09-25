@@ -17,6 +17,19 @@ public interface Trainer {
                      double[][] outputs,
                      double e);
 
+    public default int train(Network network,
+                             double η,
+                             double[][] inputs,
+                             double[][] outputs) {
+        return train(network, η, inputs, outputs, 0.0);
+    }
+
+    public default int train(Network network,
+                             double[][] inputs,
+                             double[][] outputs) {
+        return train(network, 0.01, inputs, outputs, 0.0);
+    }
+
     /**
      * Train the network until error drop.
      */

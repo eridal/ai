@@ -1,6 +1,7 @@
 package eridal.ai.neural;
 
 
+
 public class Synapse {
 
     private final Neuron source;
@@ -28,5 +29,17 @@ public class Synapse {
 
     public double error() {
         return w * target.error();
+    }
+
+    public static Synapse plug(Neuron source, double w, Neuron target) {
+        Synapse s = new Synapse(source, target, w);
+        source.targets.add(s);
+        target.sources.add(s);
+        return s;
+    }
+
+    public static Synapse plug(Neuron source, Neuron target) {
+        double w = Math.random() * 2.0 - 1.0;
+        return plug(source, w, target);
     }
 }

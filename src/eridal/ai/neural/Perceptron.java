@@ -1,27 +1,38 @@
 package eridal.ai.neural;
 
+import eridal.ai.utils.Filter;
+
 public class Perceptron {
 
-    private double weightX;
-    private double weightY;
-
     /** Activation threshold */
-    public final double bias;
-    public final double learnSpeed;
+    public final double Θ;
+    public final double η;
 
-    public Perceptron(double weightX,
-                      double weightY,
-                      double bias,
-                      double learnSpeed) {
-        this.weightX = weightX;
-        this.weightY = weightY;
-        this.bias = bias;
-        this.learnSpeed = learnSpeed;
+    private final Network net;
+
+    public Perceptron(double w0,
+                      double w1,
+                      double Θ,
+                      double η) {
+
+        Neuron n0 = new Neuron(0, Θ);
+        Neuron n1 = new Neuron(1, Θ);
+        Neuron n2 = new Neuron(2, Θ);
+
+        Synapse.plug(n0, w0, n2);
+        Synapse.plug(n1, w1, n2);
+
+        Layer l0 = new Layer(n0, n1);
+        Layer l1 = l0.createNext(n2);
+
+        this.net = new NetworkImpl(l0,  l1, Filter.POSITIVE);
+        this.Θ = Θ;
+        this.η = η;
     }
 
-    public Perceptron(double bias,
-                      double learnSpeed) {
-        this(0.5, 0.5, bias, learnSpeed);
+    public Perceptron(double Θ,
+                      double η) {
+        this(0.5, 0.5, Θ, η);
     }
 
     public Perceptron() {
@@ -38,17 +49,15 @@ public class Perceptron {
         double error = classify(x, y) - Integer.signum(result);
 
         if (error != 0) {
-            weightX -= error * learnSpeed * x;
-            weightY -= error * learnSpeed * y;
+            net.propagate(η, error);
         }
 
         return error != 0;
     }
 
-    public int classify(int x, int y) {
-        double net = x * weightX +
-                     y * weightY ;
-        return net - bias > 0 ? 1 : 0;
+    public int classify(int x0, int x1) {
+        double[] y = net.execute(new double[] {x0, x1});
+        return (int) y[0];
     }
 
 }

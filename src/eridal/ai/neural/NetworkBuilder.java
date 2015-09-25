@@ -58,7 +58,7 @@ public class NetworkBuilder {
 
                 if (null != prev) {
                     for (Neuron p : prev.neurons) {
-                        p.connect(n, Math.random() * 2.0 - 1.0);
+                        Synapse.plug(p, n);
                     }
                 }
 
@@ -69,7 +69,7 @@ public class NetworkBuilder {
                 layer = new Layer(neurons);
             }
             else {
-                layer = new Layer(neurons, layer);
+                layer = layer.createNext(neurons);
             }
 
             prev = layer;

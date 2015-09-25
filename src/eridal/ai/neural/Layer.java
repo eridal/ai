@@ -12,15 +12,19 @@ public class Layer implements Iterable<Neuron> {
     private Layer prev;
     private Layer next;
 
-    public Layer(Neuron[] neurons) {
+    public Layer(Neuron ...neurons) {
         this.neurons = neurons;
         y = new double[neurons.length];
     }
 
-    public Layer(Neuron[] neurons, Layer prev) {
+    private Layer(Layer prev, Neuron ...neurons) {
         this(neurons);
         this.prev = prev;
         prev.next = this;
+    }
+
+    public Layer createNext(Neuron ...neurons) {
+        return new Layer(this, neurons);
     }
 
     @Override public Iterator<Neuron> iterator() {
