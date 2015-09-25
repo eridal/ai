@@ -1,8 +1,10 @@
 package eridal.ai.neural;
 
+import java.util.Arrays;
 import java.util.InputMismatchException;
+import java.util.Iterator;
 
-public class Layer {
+public class Layer implements Iterable<Neuron> {
 
     final Neuron[] neurons;
 
@@ -20,6 +22,30 @@ public class Layer {
         this(neurons);
         this.prev = prev;
         prev.next = this;
+    }
+
+    @Override public Iterator<Neuron> iterator() {
+        return Arrays.stream(neurons).iterator();
+    }
+
+    public int level() {
+
+        int level = 0;
+
+        for (Layer layer = prev; null != layer; layer = layer.prev) {
+            level += 1;
+        }
+
+        return level;
+    }
+
+    private static final char INPUT  = 'i';
+    private static final char HIDDEN = 'h';
+    private static final char OUTPUT = 'o';
+
+    @Override public String toString() {
+        final char type = null == prev ? INPUT : null == next ? OUTPUT : HIDDEN;
+        return String.format("Layer(level=%d neurons=%d type=%c)", level(), neurons.length, type);
     }
 
     public Layer prev() {
@@ -96,5 +122,41 @@ public class Layer {
         }
 
         return δe;
+    }
+
+    public static class ForwardIterator implements Iterator<Layer> {
+
+        private Layer layer;
+
+        public ForwardIterator(Layer layer) {
+            this.layer = layer;
+        }
+
+        @Override public boolean hasNext() {
+            return null != layer;
+        }
+
+        @Override public Layer next() {
+            Layer current = layer;
+            layer = layer.next;
+            return current;
+        }
+    }
+
+    public static class BackwardsIterator implements Iterator<Layer> {
+
+        private Layer layer;
+
+        public BackwardsIterator(Layer layer) {
+            this.layer = layer;
+        }
+
+        @Override public boolean hasNext() {
+            return null != layer.prev;
+        }
+
+        @Override public Layer next() {
+            return layer = layer.prev;
+        }
     }
 }

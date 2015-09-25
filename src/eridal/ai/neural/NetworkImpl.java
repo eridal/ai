@@ -29,4 +29,12 @@ class NetworkImpl implements Network {
     public double propagate(double η, double... e) {
         return output.error(η, e);
     }
+
+    @Override public Layer input() {
+        return input;
+    }
+
+    @Override public Layer output() {
+        return output;
+    }
 }

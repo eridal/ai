@@ -1,34 +1,20 @@
 package eridal.ai.neural;
 
-
-public class BackPropagation implements Network {
+public class BackPropagation extends NetworkWrapper implements NetworkTrainer {
 
     /** learn speed */
     private final double η;
-
-    /**
-     * The network to train
-     */
-    private final Network net;
 
     /**
      * @param net The network to train
      * @param η learn speed
      */
     public BackPropagation(Network net, double η) {
-        this.net = net;
+        super(net);
         this.η = η;
     }
 
-    /**
-     * 
-     * @param inputs
-     * @param results
-     * 
-     * @param error stop training once error dropped this threshold
-     * 
-     * @return iteration required to train
-     */
+    @Override
     public int train(double[][] inputs, double[][] results, double error) {
 
         int size = inputs.length * 10;
@@ -59,24 +45,15 @@ public class BackPropagation implements Network {
         double[] output = net.execute(inputs);
 
         if (output.length != results.length) {
-            throw new IllegalArgumentException(); 
+            throw new IllegalArgumentException();
         }
 
         double[] delta = new double[results.length];
 
-        for (int k = delta.length; k-- > 0; ) {
+        for (int k = delta.length; k-- > 0;) {
             delta[k] = output[k] - results[k];
         }
 
         return net.propagate(η, delta);
     }
-
-    @Override public double[] execute(double... x) {
-        return net.execute(x);
-    }
-
-    @Override public double propagate(double η, double... e) {
-        return net.propagate(η, e);
-    }
 }
-

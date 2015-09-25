@@ -38,6 +38,7 @@ public class NetworkBuilder {
 
         Layer layer = null;
         Layer prev = null;
+        int id = 0;
 
         for (int size : sizes) {
 
@@ -45,7 +46,7 @@ public class NetworkBuilder {
 
             while (size-- > 0) {
 
-                final Neuron n = new Neuron(sq);
+                final Neuron n = new Neuron(id++, sq);
 
                 if (null != prev) {
                     for (Neuron p : prev.neurons) {

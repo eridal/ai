@@ -14,6 +14,10 @@ public class Synapse {
         this.w = w;
     }
 
+    @Override public String toString() {
+        return String.format("Synapse([n%d]->[n%d] w=%2.2f)", source.id(), target.id(), w);
+    }
+
     public double activate() {
         return w * source.output();
     }
