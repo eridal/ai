@@ -2,7 +2,7 @@ package eridal.ai.neural;
 
 import java.util.InputMismatchException;
 
-public class BackPropagation2 {
+public class BackPropagation2 implements Network {
 
     /** learn speed */
     private final double η;
@@ -14,16 +14,29 @@ public class BackPropagation2 {
         this.η = learnSpeed;
     }
 
-    public void train(double[][] inputs, double[][] results, double error) {
+    public int train(double[][] inputs, double[][] results, double error) {
 
-        int i = 0;
-        double err;
+        int size = inputs.length * 10;
+        int min = 2 * size;
 
-        do {
-            i += 1;
-            i %= inputs.length;
-            err = train(inputs[i], results[i]);
-        } while (error < Math.abs(err));
+        double[] e = new double[size];
+        double sum = 0;
+        double avg = 0;
+
+        int k = 1;
+
+        for (; k < min || error < avg; k++) {
+
+            int i = k % inputs.length;
+            int r = k % size;
+
+            sum -= e[r];
+            sum += e[r] = train(inputs[i], results[i]);
+
+            avg = sum / k;
+        }
+
+        return k;
     }
 
     public double train(double[] inputs, double[] results) {
@@ -41,6 +54,14 @@ public class BackPropagation2 {
         }
 
         return net.propagate(η, delta);
+    }
+
+    @Override public double[] execute(double... x) {
+        return net.execute(x);
+    }
+
+    @Override public double propagate(double η, double... e) {
+        return net.propagate(η, e);
     }
 }
 

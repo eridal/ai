@@ -44,7 +44,7 @@ public class Layer {
             throw new InputMismatchException();
         }
 
-        // activate neurons
+        // set inputs
         for (int k = neurons.length; k-- > 0; ) {
             y[k] = neurons[k].input(x[k]);
         }

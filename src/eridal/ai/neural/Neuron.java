@@ -8,9 +8,6 @@ public class Neuron {
     /** output  */
     private double y;
 
-    /** weights */
-    private double w;
-
     /** error   */
     private double δ;
 
@@ -19,17 +16,12 @@ public class Neuron {
     private List<Synapse> forward = new ArrayList<>();
     private List<Synapse> backward = new ArrayList<>();
 
-    public Neuron(Squash fn) {
-        this(fn, 1.0);
-    }
-
     final int id;
     static int ID;
 
-    public Neuron(Squash fn, double w) {
+    public Neuron(Squash fn) {
         this.id = ID++;
         this.fn = fn;
-        this.w = w;
     }
 
     public void connect(Neuron n, double w) {
@@ -39,7 +31,7 @@ public class Neuron {
     }
 
     public double input(double x) {
-        return y = fn.activate(w * x);
+        return y = x;
     }
 
     public double activate() {
@@ -47,20 +39,15 @@ public class Neuron {
         for (Synapse s : backward) {
             x += s.activate();
         }
-        return input(x);
+        return input(fn.activate(x));
     }
 
     public double error(double η, double e) {
 
         δ = fn.error(y) * e;
 
-        if (backward.isEmpty()) {
-            w -= η * y * δ;
-        }
-        else {
-            for (Synapse s : backward) {
-                s.propagate(η);
-            }
+        for (Synapse s : backward) {
+            s.propagate(η);
         }
 
         return δ;
