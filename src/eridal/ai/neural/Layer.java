@@ -1,7 +1,6 @@
 package eridal.ai.neural;
 
 import java.util.Arrays;
-import java.util.InputMismatchException;
 import java.util.Iterator;
 
 public class Layer implements Iterable<Neuron> {
@@ -67,7 +66,7 @@ public class Layer implements Iterable<Neuron> {
     public double[] input(double ...x) {
 
         if (neurons.length != x.length) {
-            throw new InputMismatchException();
+            throw new IllegalArgumentException();
         }
 
         // set inputs
@@ -95,7 +94,7 @@ public class Layer implements Iterable<Neuron> {
     public double error(double η, double[] e) {
 
         if (neurons.length != e.length) {
-            throw new InputMismatchException();
+            throw new IllegalArgumentException();
         }
 
         double δe = 0;
