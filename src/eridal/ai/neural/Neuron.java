@@ -33,8 +33,8 @@ public class Neuron implements Iterable<Synapse> {
         this(id, 0.0, squash);
     }
 
-    public Neuron(int id, double Θ) {
-        this(id, Θ, Squashs.IDENTITY);
+    public Neuron(int id, double bias) {
+        this(id, bias, Squashs.IDENTITY);
     }
 
     public Neuron(int id) {

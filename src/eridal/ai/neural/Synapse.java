@@ -39,7 +39,12 @@ public class Synapse {
     }
 
     public static Synapse plug(Neuron source, Neuron target) {
-        double w = Math.random() * 2.0 - 1.0;
+        double w = randomWeight();
         return plug(source, w, target);
     }
+
+    public static double randomWeight() {
+        return Math.random() * 2.0 - 1.0;
+    }
+
 }

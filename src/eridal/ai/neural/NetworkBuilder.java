@@ -20,8 +20,8 @@ public class NetworkBuilder {
         return this;
     }
 
-    public NetworkBuilder bias(double Θ) {
-        this.bias = Θ;
+    public NetworkBuilder bias(double bias) {
+        this.bias = bias;
         return this;
     }
 
