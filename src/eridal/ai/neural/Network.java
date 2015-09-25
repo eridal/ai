@@ -14,8 +14,7 @@ public interface Network extends Iterable<Layer> {
      * @throws IllegalArgumentException when the input {@code x}
      *      does not match the input's layer size
      */
-    public double[] execute(double ...x)
-            throws IllegalArgumentException;
+    public double[] execute(double ...x);
 
     /**
      * Propagate errors backwards, from the output layer,
@@ -29,8 +28,7 @@ public interface Network extends Iterable<Layer> {
      * @throws IllegalArgumentException when the input {@code δ}
      *      does not match the output's layer size
      */
-    public double propagate(double η, double ...e)
-            throws IllegalArgumentException;
+    public double propagate(double η, double ...e);
 
     /**
      * Returns this network's input layer
