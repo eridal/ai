@@ -12,7 +12,7 @@ public class Layer implements Iterable<Neuron> {
     private Layer prev;
     private Layer next;
 
-    public Layer(Neuron ...neurons) {
+    public Layer(final Neuron ...neurons) {
         this.neurons = neurons;
         y = new double[neurons.length];
     }

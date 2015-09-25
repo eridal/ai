@@ -7,7 +7,7 @@ public class NetworkBuilder {
     private Squash sq = Squashs.SIGMOID;
     private Filter filter;
 
-    private double Θ = 0;
+    private double bias = 0;
     private int[] sizes;
 
     public NetworkBuilder squash(Squash sq) {
@@ -21,7 +21,7 @@ public class NetworkBuilder {
     }
 
     public NetworkBuilder bias(double Θ) {
-        this.Θ = Θ;
+        this.bias = Θ;
         return this;
     }
 
@@ -39,7 +39,7 @@ public class NetworkBuilder {
             in = layer;
         }
 
-        return new NetworkImpl(in, out, filter);
+        return new Network(in, out, filter);
     }
 
     private Layer buildLayers() {
@@ -54,7 +54,7 @@ public class NetworkBuilder {
 
             while (size-- > 0) {
 
-                final Neuron n = new Neuron(id++, Θ, sq);
+                final Neuron n = new Neuron(id++, bias, sq);
 
                 if (null != prev) {
                     for (Neuron p : prev.neurons) {

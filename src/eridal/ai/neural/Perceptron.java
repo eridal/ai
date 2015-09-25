@@ -4,10 +4,7 @@ import eridal.ai.utils.Filter;
 
 public class Perceptron {
 
-    /** Activation threshold */
-    public final double Θ;
     public final double η;
-
     private final Network net;
 
     public Perceptron(double w0,
@@ -25,8 +22,7 @@ public class Perceptron {
         Layer l0 = new Layer(n0, n1);
         Layer l1 = l0.createNext(n2);
 
-        this.net = new NetworkImpl(l0,  l1, Filter.POSITIVE);
-        this.Θ = Θ;
+        this.net = new Network(l0,  l1, Filter.POSITIVE);
         this.η = η;
     }
 

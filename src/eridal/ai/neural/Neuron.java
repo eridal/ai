@@ -15,7 +15,7 @@ public class Neuron implements Iterable<Synapse> {
     private double δ;
 
     /** bias */
-    private double Θ;
+    private double bias;
 
     /** squash function */
     private Squash squash;
@@ -23,14 +23,22 @@ public class Neuron implements Iterable<Synapse> {
     List<Synapse> targets = new ArrayList<>();
     List<Synapse> sources = new ArrayList<>();
 
-    public Neuron(int id, double Θ, Squash squash) {
+    public Neuron(int id, double bias, Squash squash) {
         this.id = id;
-        this.Θ = Θ;
+        this.bias = bias;
         this.squash = squash;
+    }
+
+    public Neuron(int id, Squash squash) {
+        this(id, 0.0, squash);
     }
 
     public Neuron(int id, double Θ) {
         this(id, Θ, Squashs.IDENTITY);
+    }
+
+    public Neuron(int id) {
+        this(id, 0.0);
     }
 
     public int id() {
@@ -51,7 +59,7 @@ public class Neuron implements Iterable<Synapse> {
             // hidden neuron
             synap = String.format("%d->n->%d", sources.size(), targets.size());
         }
-        return String.format("Neuron(id:%d y:%2.2f Θ:%2.2f δ:%2.2f synap:[%s])", id, y, Θ, δ, synap);
+        return String.format("Neuron(id:%d y:%2.2f Θ:%2.2f δ:%2.2f synap:[%s])", id, y, bias, δ, synap);
     }
 
     public double input(double x) {
@@ -63,7 +71,7 @@ public class Neuron implements Iterable<Synapse> {
         for (Synapse s : sources) {
             x += s.activate();
         }
-        return y = squash.activate(x - Θ);
+        return y = squash.activate(x - bias);
     }
 
     public double error(double η, double e) {
