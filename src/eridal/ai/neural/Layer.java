@@ -17,14 +17,16 @@ public class Layer implements Iterable<Neuron> {
         y = new double[neurons.length];
     }
 
-    private Layer(Layer prev, Neuron ...neurons) {
-        this(neurons);
-        this.prev = prev;
-        prev.next = this;
-    }
-
     public Layer createNext(Neuron ...neurons) {
-        return new Layer(this, neurons);
+
+        if (null != next) {
+            throw new IllegalStateException();
+        }
+
+        next = new Layer(neurons);
+        next.prev = this;
+
+        return next;
     }
 
     @Override public Iterator<Neuron> iterator() {
