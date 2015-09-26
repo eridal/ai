@@ -1,5 +1,6 @@
 package eridal.ai.neural;
 
+import eridal.ai.utils.ArrayMath;
 import eridal.ai.utils.Filter;
 
 public class Networks {
@@ -44,6 +45,41 @@ public class Networks {
             .squash(Squashs.SIGMOID)
             .filter(Filter.SPLIT)
             .build();
+    }
+
+    public static Network hopfield(int size, double[] v0, double[] v1) {
+
+        if (size < 1 || v0.length != size || v1.length != size) {
+            throw new IllegalArgumentException();
+        }
+
+        final Neuron[] i = new Neuron[size];
+        final Neuron[] o = new Neuron[size];
+
+        for (int k = size; k-- > 0; ) {
+            i[k] = new Neuron(k);
+            o[k] = new Neuron(k + size);
+        }
+
+        final double[][] m0 = ArrayMath.product(v0, v0);
+        final double[][] m1 = ArrayMath.product(v1, v1);
+        final double[][] m  = ArrayMath.sum(m0, m1);
+
+        for (int s = o.length; s-- > 0;) {
+            for (int t = o.length; t-- > 0;) {
+                if (s == t) {
+                    Synapse.plug(i[s], 1.0, o[t]);
+                }
+                else {
+                    Synapse.plug(o[s], m[s][t], o[t]);
+                }
+            }
+        }
+
+        final Layer input = new Layer(i);
+        final Layer output = input.createNext(o);
+
+        return new Network(input, output, Math::signum);
     }
 
 }

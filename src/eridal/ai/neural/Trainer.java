@@ -1,8 +1,10 @@
 package eridal.ai.neural;
 
-public interface Trainer {
+public abstract class Trainer {
 
     /**
+     * Train the network until error drop.
+     * 
      * @param network the network to train
      * @param η learn rate speed
      * @param inputs input values
@@ -11,43 +13,45 @@ public interface Trainer {
      * 
      * @return iterations required to train the network
      */
-    public int train(Network network,
-                     double η,
-                     double[][] inputs,
-                     double[][] outputs,
-                     double e);
+    public static long train(Network network,
+                             double η,
+                             double[][] inputs,
+                             double[][] outputs,
+                             double error) {
 
-    public default int train(Network network,
+         long k = 0;
+         double sum;
+
+         do {
+             sum = 0;
+             for (int i = inputs.length; i-- >0; k += 1) {
+                 double e = teach(network, η, inputs[i], outputs[i]);
+                 sum += Math.abs(e);
+             }
+         } while (error < sum);
+
+         return k;
+     }
+
+    public static long train(Network network,
                              double η,
                              double[][] inputs,
                              double[][] outputs) {
         return train(network, η, inputs, outputs, 0.0);
     }
 
-    public default int train(Network network,
+    public static long train(Network network,
+                             double[][] inputs,
+                             double[][] outputs,
+                             double e) {
+        return train(network, 0.01, inputs, outputs, e);
+    }
+
+    public static long train(Network network,
                              double[][] inputs,
                              double[][] outputs) {
         return train(network, 0.01, inputs, outputs, 0.0);
     }
-
-    /**
-     * Train the network until error drop.
-     */
-    public static final Trainer UNTIL = (net, η, inputs, results, error) -> {
-
-        int k = 0;
-        double sum;
-
-        do {
-            sum = 0;
-            for (int i = inputs.length; i-- >0; k++) {
-                double e = teach(net, η, inputs[i], results[i]);
-                sum += Math.abs(e);
-            }
-        } while (error < sum);
-
-        return k;
-    };
 
     /**
      * Teach a given set of inputs to some network 
@@ -60,7 +64,7 @@ public interface Trainer {
      *
      * @return error rate delta
      */
-    static double teach(Network net, double η, double[] x, double[] y) {
+    public static double teach(Network net, double η, double[] x, double[] y) {
 
         double[] r = net.execute(x);
 
