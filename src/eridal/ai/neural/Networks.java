@@ -20,12 +20,13 @@ public class Networks {
 
     public static Network percepton(double bias, double w0, double w1) {
 
-        Neuron n0 = new Neuron(0, bias, Squashs.IDENTITY);
-        Neuron n1 = new Neuron(1, bias, Squashs.IDENTITY);
-        Neuron n2 = new Neuron(2, bias, Squashs.IDENTITY);
+        final Neuron n0 = new Neuron(0);
+        final Neuron n1 = new Neuron(1);
+        final Neuron n2 = new Neuron(2);
 
-        Synapse.plug(n0, w0, n2);
-        Synapse.plug(n1, w1, n2);
+        n0.synapseTo(n2, w0);
+        n1.synapseTo(n2, w1);
+        n2.bias(bias);
 
         Layer l0 = new Layer(n0, n1);
         Layer l1 = l0.createNext(n2);
@@ -43,7 +44,7 @@ public class Networks {
             .layers(layers)
             .bias(bias)
             .squash(Squashs.SIGMOID)
-            .filter(Filter.SPLIT)
+            .filter(Filter.HALF_STEP)
             .build();
     }
 
@@ -68,10 +69,10 @@ public class Networks {
         for (int s = o.length; s-- > 0;) {
             for (int t = o.length; t-- > 0;) {
                 if (s == t) {
-                    Synapse.plug(i[s], 1.0, o[t]);
+                    i[s].synapseTo(o[t], 1.0);
                 }
                 else {
-                    Synapse.plug(o[s], m[s][t], o[t]);
+                    o[s].synapseTo(o[t], m[s][t]);
                 }
             }
         }

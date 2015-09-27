@@ -4,14 +4,14 @@ import eridal.ai.utils.Filter;
 
 public class NetworkBuilder {
 
-    private Squash sq = Squashs.SIGMOID;
+    private Squash squash = Squashs.SIGMOID;
     private Filter filter;
 
     private double bias = 0;
     private int[] sizes;
 
-    public NetworkBuilder squash(Squash sq) {
-        this.sq = sq;
+    public NetworkBuilder squash(Squash squash) {
+        this.squash = squash;
         return this;
     }
 
@@ -32,18 +32,6 @@ public class NetworkBuilder {
 
     public Network build() {
 
-        Layer out = buildLayers();
-        Layer in = out;
-
-        for (Layer layer = out; null != layer; layer = layer.prev()) {
-            in = layer;
-        }
-
-        return new Network(in, out, filter);
-    }
-
-    private Layer buildLayers() {
-
         Layer layer = null;
         Layer prev = null;
         int id = 0;
@@ -54,11 +42,13 @@ public class NetworkBuilder {
 
             while (size-- > 0) {
 
-                final Neuron n = new Neuron(id++, bias, sq);
+                final Neuron n = new Neuron(id++, squash);
+
+                n.bias(bias);
 
                 if (null != prev) {
                     for (Neuron p : prev.neurons) {
-                        Synapse.plug(p, n);
+                        p.synapseTo(n);
                     }
                 }
 
@@ -75,8 +65,7 @@ public class NetworkBuilder {
             prev = layer;
         }
 
-        return layer;
+        final Layer in = Layer.first(layer);
+        return new Network(in, layer, filter);
     }
-
-    
 }

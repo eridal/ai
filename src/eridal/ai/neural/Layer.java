@@ -129,6 +129,20 @@ public class Layer implements Iterable<Neuron> {
         return δe;
     }
 
+    public static Layer last(Layer layer) {
+        while (null != layer.next) {
+            layer = layer.next;
+        }
+        return layer;
+    }
+
+    public static Layer first(Layer layer) {
+        while (null != layer.prev) {
+            layer = layer.prev;
+        }
+        return layer;
+    }
+
     public static class ForwardIterator implements Iterator<Layer> {
 
         private Layer layer;

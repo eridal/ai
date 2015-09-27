@@ -1,8 +1,8 @@
 package eridal.ai.neural;
 
-public abstract class Squashs {
+public enum Squashs implements Squash {
 
-    public static final Squash IDENTITY = new Squash() {
+    IDENTITY () {
 
         @Override public double activate(double x) {
             return x;
@@ -11,10 +11,9 @@ public abstract class Squashs {
         @Override public double error(double y) {
             return 1;
         }
+    },
 
-    };
-
-    public static final Squash SIGMOID = new Squash() {
+    SIGMOID () {
 
         @Override public double activate(double x) {
             return 1.0 / (1.0 + Math.exp(-x));
@@ -23,9 +22,9 @@ public abstract class Squashs {
         @Override public double error(double y) {
             return y * (1.0 - y);
         }
-    };
+    },
 
-    public static final Squash TANH = new Squash() {
+    TANH () {
 
         @Override public double activate(double x) {
             return Math.tanh(x);
@@ -34,5 +33,7 @@ public abstract class Squashs {
         @Override public double error(double y) {
             return 1 - Math.pow(Math.tanh(y), 2);
         }
-    };
+    },
+
+    ;
 }

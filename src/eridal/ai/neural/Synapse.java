@@ -1,46 +1,51 @@
 package eridal.ai.neural;
 
 
-
 public class Synapse {
 
     private final Neuron source;
     private final Neuron target;
 
-    private double w;
+    private double weight;
 
-    public Synapse(Neuron source, Neuron target, double w) {
+    public Synapse(Neuron source, Neuron target, double weight) {
         this.source = source;
         this.target = target;
-        this.w = w;
+        this.weight = weight;
     }
 
     @Override public String toString() {
-        return String.format("Synapse([n%d]->[n%d] w:%2.2f)", source.id(), target.id(), w);
+        final String s = source.id() == Neuron.BIAS ? "b" : String.format("n%d", source.id());
+        final String t = target.id() == Neuron.BIAS ? "b" : String.format("n%d", target.id());
+        return String.format("Synapse([%s]->[%s] w:%2.2f)", s, t, weight);
+    }
+
+    public Neuron source() {
+        return source;
+    }
+
+    public Neuron target() {
+        return target;
+    }
+
+    public void weight(double weight) {
+        this.weight = weight;
+    }
+
+    public double weight() {
+        return weight;
     }
 
     public double activate() {
-        return w * source.output();
+        return weight * source.output();
     }
 
     public void propagate(double η) {
-        w -= η * source.output() * target.error();
+        weight -= η * source.output() * target.error();
     }
 
     public double error() {
-        return w * target.error();
-    }
-
-    public static Synapse plug(Neuron source, double w, Neuron target) {
-        Synapse s = new Synapse(source, target, w);
-        source.targets.add(s);
-        target.sources.add(s);
-        return s;
-    }
-
-    public static Synapse plug(Neuron source, Neuron target) {
-        double w = randomWeight();
-        return plug(source, w, target);
+        return weight * target.error();
     }
 
     public static double randomWeight() {

@@ -3,17 +3,23 @@ package eridal.ai.neural;
 import java.util.Iterator;
 
 import eridal.ai.utils.Filter;
+import eridal.ai.utils.Nulls;
 
 public class Network implements Iterable<Layer> {
 
     final Layer input;
     final Layer output;
+
     final Filter filter;
 
     public Network(Layer input, Layer output, Filter filter) {
         this.input = input;
         this.output = output;
-        this.filter = Filter.optional(filter);
+        this.filter = Nulls.coalesce(filter, Filter.NONE);
+    }
+
+    public Network(Layer input, Layer output) {
+        this(input, output, null);
     }
 
     /**
@@ -90,4 +96,5 @@ public class Network implements Iterable<Layer> {
     public Iterator<Layer> layersReverse() {
         return new Layer.BackwardsIterator(output);
     }
+
 }
