@@ -44,9 +44,10 @@ public class NetworkBuilder {
 
                 final Neuron n = new Neuron(id++, squash);
 
-                n.bias(bias);
-
                 if (null != prev) {
+
+                    n.bias(bias);
+
                     for (Neuron p : prev.neurons) {
                         p.synapseTo(n);
                     }
