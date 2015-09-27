@@ -22,6 +22,30 @@ public class Network implements Iterable<Layer> {
         this(input, output, null);
     }
 
+    public double[][] matrix() {
+
+        int total = 0;
+
+        for (Layer layer = input; null != layer; layer = layer.next()) {
+            for (@SuppressWarnings("unused") Neuron n : layer) {
+                total += 1;
+            }
+        }
+
+        double[][] matrix = new double[total][total];
+
+        for (Layer layer = input; null != layer; layer = layer.next()) {
+            for (Neuron n : layer) {
+                matrix[n.id()][n.id()] = n.bias();
+                for (Synapse s : n.targets()) {
+                    matrix[n.id()][s.target().id()] = s.weight();
+                }
+            }
+        }
+
+        return matrix;
+    }
+
     /**
      * Feed forward the network with the given input.
      *

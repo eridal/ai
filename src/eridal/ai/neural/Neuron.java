@@ -19,7 +19,6 @@ public class Neuron {
     /** error */
     private double δ;
 
-
     final List<Synapse> sources = new ArrayList<>();
     final List<Synapse> targets = new ArrayList<>();
 
@@ -77,9 +76,10 @@ public class Neuron {
 
     @Override public String toString() {
         final String n = id == BIAS ? "bias" : String.format("id:%d", id);
+        final String b = null == bias ? "" : String.format("bias:%2.2f ", bias.weight());
         final String in  = sources.isEmpty() ? "" : String.format("%d->", sources.size());
         final String out = targets.isEmpty() ? "" : String.format("->%d", targets.size());
-        return String.format("Neuron(%s y:%2.2f δ:%2.2f synap:[%sn%s])", n, y, δ, in, out);
+        return String.format("Neuron(%s y:%2.2f δ:%2.2f %ssynap:[%sn%s])", n, y, δ, b, in, out);
     }
 
     static final int BIAS = -0xB1A5;
@@ -87,8 +87,8 @@ public class Neuron {
     /**
      * @return The hidden bias connection of this Neuron
      */
-    public Neuron bias() {
-        return null == bias ? null : bias.source();
+    public double bias() {
+        return null == bias ? 0.0 : bias.weight();
     }
 
     /**
@@ -98,19 +98,18 @@ public class Neuron {
      * @param Θ the initial bias value
      * @return The bias Neuron
      */
-    public Neuron bias(double Θ) {
+    public void bias(double Θ) {
 
         // do we already have bias?
         if (null != bias) {
             bias.weight(Θ);
-            return bias.source();
         }
-
-        // well.. let's add it 
-        final Neuron n = new Neuron(BIAS);
-        n.input(1.0);
-        bias = n.synapseTo(this, Θ);
-        return n;
+        else {
+            // well.. let's add it
+            final Neuron n = new Neuron(BIAS);
+            n.input(1.0);
+            bias = n.synapseTo(this, Θ);
+        }
     }
 
     public double input(double x) {

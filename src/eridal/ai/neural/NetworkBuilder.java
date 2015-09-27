@@ -7,8 +7,10 @@ public class NetworkBuilder {
     private Squash squash = Squashs.SIGMOID;
     private Filter filter;
 
-    private double bias = 0;
+    private Double bias = null;
+
     private int[] sizes;
+    private double[][] matrix;
 
     public NetworkBuilder squash(Squash squash) {
         this.squash = squash;
@@ -25,6 +27,11 @@ public class NetworkBuilder {
         return this;
     }
 
+    public NetworkBuilder matrix(double[][] matrix) {
+        this.matrix = matrix;
+        return this;
+    }
+
     public NetworkBuilder layers(int... sizes) {
         this.sizes = sizes;
         return this;
@@ -34,6 +41,7 @@ public class NetworkBuilder {
 
         Layer layer = null;
         Layer prev = null;
+
         int id = 0;
 
         for (int size : sizes) {
@@ -46,10 +54,20 @@ public class NetworkBuilder {
 
                 if (null != prev) {
 
-                    n.bias(bias);
+                    if (null != matrix) {
+                        n.bias(matrix[n.id()][n.id()]);
+                    }
+                    else if (bias != null) {
+                        n.bias(bias);
+                    }
 
                     for (Neuron p : prev.neurons) {
-                        p.synapseTo(n);
+                        if (null != matrix) {
+                            p.synapseTo(n, matrix[p.id()][n.id()]);
+                        }
+                        else {
+                            p.synapseTo(n);
+                        }
                     }
                 }
 
