@@ -3,13 +3,7 @@ package eridal.ai.neural;
 import java.util.ArrayList;
 import java.util.List;
 
-import eridal.ai.utils.ArrayMath;
-
-public class Trainer {
-
-    final Network network;
-
-    final double η;
+public abstract class Trainer {
 
     public List<double[]> trainX = new ArrayList<>();
     public List<double[]> trainY = new ArrayList<>();
@@ -17,8 +11,9 @@ public class Trainer {
     public List<double[]> testX = new ArrayList<>();
     public List<double[]> testY = new ArrayList<>();
 
-    public Trainer(Network network, double η) {
-        this.network = network;
+    final double η;
+
+    public Trainer(double η) {
         this.η = η;
     }
 
@@ -55,41 +50,12 @@ public class Trainer {
      * 
      * @return error rate
      */
-    public double go(double error) {
+    public abstract double go(double error);
 
-        double sum = 0;
-        double avg = error + 1;
-
-        double[] epoch = new double[(trainX.size() + testX.size()) * 15];
-
-        for (int e = 0; error < avg; ) {
-
-            for (int k = trainX.size(); k-- > 0; e++) {
-                double err = teach(trainX.get(k), trainY.get(k));
-                sum -= epoch[e + k];
-                sum += epoch[e + k] = err;
-            }
-
-            for (int k = testX.size(); k-- > 0; e++) {
-                double err = errorDiff(testX.get(k), testY.get(k));
-                sum -= epoch[e + k];
-                sum += epoch[e + k] = err;
-            }
-
-            avg = sum / trainX.size();
-
-            if (e == epoch.length) {
-                double err = ArrayMath.sum(epoch) / epoch.length;
-                if (err < ERROR_MIN) {
-                    return err;
-                }
-                e = 0;
-            }
-
-        }
-
-        return avg;
-    }
+    /** 
+     * @return The trained network
+     */
+    public abstract Network network();
 
     /**
      * Teach a given set of inputs to some network
@@ -99,12 +65,13 @@ public class Trainer {
      *
      * @return error delta
      */
-    private double teach(double[] x, double[] y) {
-        double[] err = errorVector(x, y);
-        return network.propagate(η, err);
+    protected double teach(Network network, double[] x, double[] y) {
+        double[] err = errorVector(network, x, y);
+        double e = network.propagate(η, err);
+        return Math.abs(e);
     }
 
-    private double[] errorVector(double[] x, double[] y) {
+    protected double[] errorVector(Network network, double[] x, double[] y) {
 
         double[] r = network.execute(x);
 
@@ -121,13 +88,36 @@ public class Trainer {
         return err;
     }
 
-    private double errorDiff(double[] x, double[] y) {
-        double[] err = errorVector(x, y);
+    protected double errorDiff(Network network, double[] x, double[] y) {
+        double[] err = errorVector(network, x, y);
         double r = 0;
         for (double e : err) {
-            r += e;
+            r += Math.abs(e);
         }
         return r;
     }
 
+    protected double error(Network network) {
+        return errorTrain(network) + errorTest(network);
+    }
+
+    protected double errorTrain(Network network) {
+        return error(network, trainX, trainY);
+    }
+
+    protected double errorTest(Network network) {
+        return error(network, testX, testY);
+    }
+
+    private double error(Network network, List<double[]> x, List<double[]> y) {
+
+        int size = 0;
+        double sum = 0;
+
+        for (int k = x.size(); k-- > 0; size++) {
+            sum += errorDiff(network, x.get(k), y.get(k));
+        }
+
+        return size > 0 ? sum / size : 0;
+    }
 }

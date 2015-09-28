@@ -64,7 +64,7 @@ public class Network implements Iterable<Layer> {
      * Returns the output
      */
     public double[] result() {
-        return filter.apply(output.y);
+        return filter.apply(output.result());
     }
 
     /**
@@ -111,6 +111,21 @@ public class Network implements Iterable<Layer> {
      */
     public Iterator<Layer> layers() {
         return new Layer.ForwardIterator(input);
+    }
+
+    public int[] layersSizes() {
+
+        int k = output.level();
+        int[] layers = new int[k];
+
+        Layer layer = output;
+
+        while (k--> 0) {
+            layers[k] = layer.size();
+            layer = layer.prev();
+        }
+
+        return layers;
     }
 
     /**

@@ -5,9 +5,8 @@ import java.util.Iterator;
 
 public class Layer implements Iterable<Neuron> {
 
-    final Neuron[] neurons;
-
-    final double[] y;
+    private final Neuron[] neurons;
+    private final double[] y;
 
     private Layer prev;
     private Layer next;
@@ -31,6 +30,13 @@ public class Layer implements Iterable<Neuron> {
 
     @Override public Iterator<Neuron> iterator() {
         return Arrays.stream(neurons).iterator();
+    }
+
+    /**
+     * @return Neuron's quantity
+     */
+    public int size() {
+        return neurons.length;
     }
 
     public int level() {
@@ -94,6 +100,10 @@ public class Layer implements Iterable<Neuron> {
         for (int k = neurons.length; k-- > 0; ) {
             y[k] = neurons[k].activate();
         }
+        return y;
+    }
+
+    public double[] result() {
         return y;
     }
 

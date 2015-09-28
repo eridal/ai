@@ -108,5 +108,4 @@ public class Networks {
 
         return new Network(input, output, Math::signum);
     }
-
 }
