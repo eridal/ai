@@ -1,6 +1,7 @@
 package eridal.ai.neural;
 
-import eridal.ai.utils.ArrayMath;
+import eridal.ai.math.Vector;
+
 
 public abstract class Trainers {
 
@@ -37,7 +38,7 @@ public abstract class Trainers {
                 avg = sum / trainX.size();
 
                 if (e == epoch.length) {
-                    double err = ArrayMath.sum(epoch) / epoch.length;
+                    double err = Vector.average(epoch);
                     if (err < ERROR_MIN) {
                         return err;
                     }

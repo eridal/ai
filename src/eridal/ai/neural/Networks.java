@@ -1,6 +1,6 @@
 package eridal.ai.neural;
 
-import eridal.ai.utils.ArrayMath;
+import eridal.ai.math.Matrix;
 import eridal.ai.utils.Filter;
 
 public class Networks {
@@ -80,8 +80,8 @@ public class Networks {
                 throw new IllegalArgumentException("wrong pattern size");
             }
 
-            double[][] m = ArrayMath.product(p, p);
-            weights = ArrayMath.sum(weights, m);
+            double[][] m = Matrix.product(p, p);
+            weights = Matrix.add(weights, m);
         }
 
         final Neuron[] i = new Neuron[size];
