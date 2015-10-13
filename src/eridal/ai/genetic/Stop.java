@@ -53,13 +53,15 @@ public interface Stop<C extends Creature> {
     }
 
     /**
-     * Stops executing when any of the given {@link Stop}s stops.
+     * Stops executing when ANY of the given {@link Stop} criteria is met.
      */
     @SafeVarargs
     public static <C extends Creature> Stop<C> ANY(final Stop<C> ...stops) {
+
         if (stops.length == 0) {
-            throw new IllegalArgumentException("empty stoppers array");
+            throw new IllegalArgumentException("empty stop criteria");
         }
+
         if (stops.length == 1) {
             return stops[0];
         }
@@ -70,13 +72,15 @@ public interface Stop<C extends Creature> {
     }
 
     /**
-     * Stops executing when all of the given {@link Stop}s stops.
+     * Stops executing when ALL of the given {@link Stop} criteria is met.
      */
     @SafeVarargs
     public static <C extends Creature> Stop<C>  ALL(final Stop<C> ...stops) {
+
         if (stops.length == 0) {
-            throw new IllegalArgumentException("empty stoppers array");
+            throw new IllegalArgumentException("empty stop criteria");
         }
+
         if (stops.length == 1) {
             return stops[0];
         }
@@ -87,9 +91,17 @@ public interface Stop<C extends Creature> {
     }
 
     /**
-     * Stops executing when the given condition meets
+     * Stops executing WHEN the given criteria is met
      */
     public static <C extends Creature> Stop<C> WHEN(final Predicate<C> predicate) {
         return (creatures, problem) -> predicate.test(problem.best(creatures));
     }
+
+    /**
+     * Danger!! Execution will never stop 
+     */
+    public static <C extends Creature> Stop<C> NEVER() {
+        return (creatures, problem) -> false;
+    }
+
 }

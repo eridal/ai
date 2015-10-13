@@ -19,17 +19,47 @@ public interface Problem<C extends Creature> {
     public C best(C x, C y);
 
     /**
+     * Compares two creatures.
+     * 
+     * Returns a negative integer, zero, or a positive integer as the first argument 
+     * is worst than, equal to, or better than the second.
+     */
+    public default int compare(C x, C y) {
+        return comparator().compare(x, y);
+    }
+
+    /**
      * Returns the best {@link Creature} for this problem
      */
     public default C best(List<C> creatures) {
-        return creatures.stream().min(comparator()).get();
+        return best(creatures.stream());
+    }
+
+    /**
+     * Returns the best {@link Creature} for this problem
+     */
+    public default C best(Stream<C> creatures) {
+        return creatures.min(comparator()).get();
     }
 
     /**
      * Returns the worst {@link Creature} for this problem
      */
     public default C worst(List<C> creatures) {
-        return creatures.stream().max(comparator()).get();
+        return worst(creatures.stream());
+    }
+
+    /**
+     * Returns the best {@link Creature} for this problem
+     */
+    public default C worst(Stream<C> creatures) {
+        return creatures.max(comparator()).get();
+    }
+    
+    public default <D extends Creature> Problem<D> cast() {
+        @SuppressWarnings("unchecked")
+        Problem<D> that = (Problem<D>) this;
+        return that;
     }
 
     public default List<C> bestOf(List<C> elite, List<C> creatures) {
@@ -45,6 +75,7 @@ public interface Problem<C extends Creature> {
                 .limit(size)
                 .collect(Collectors.toList());
     }
+
     /**
      * Returns `true` if the {@link Creature} have a fitness
      * value that exceeds the given fitness target
@@ -72,8 +103,10 @@ public interface Problem<C extends Creature> {
                 return Creature.average(creatures) > fitness;
             }
 
+            final Comparator<C> DESC = Creature.descending();
+
             @Override public Comparator<C> comparator() {
-                return Comparator.<C, Double>comparing(Creature::fitness).reversed();
+                return DESC;
             }
         };
     }
@@ -94,8 +127,10 @@ public interface Problem<C extends Creature> {
                 return Creature.average(creatures) < fitness;
             }
 
+            final Comparator<C> ASC = Creature.ascending();
+
             @Override public Comparator<C> comparator() {
-                return Comparator.comparing(Creature::fitness);
+                return ASC;
             }
         };
     }

@@ -3,6 +3,7 @@ package eridal.ai.utils;
 import java.lang.reflect.Array;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Supplier;
 
 public abstract class Rand {
 
@@ -64,7 +65,8 @@ public abstract class Rand {
     /**
      * Returns a pseudo-randomly chosen element from the given array
      */
-    public static <T> T element(T[] values) {
+    @SafeVarargs
+    public static <T> T element(T ...values) {
         final int index = integer(values.length);
         return values[index];
     }
@@ -107,6 +109,15 @@ public abstract class Rand {
     public static <E extends Enum<E>> E element(Class<E> enumClass) {
         final E[] values = enumClass.getEnumConstants();
         return element(values);
+    }
+
+    /**
+     * Returns an element obtained from a pseudo-randomly chosen supplier
+     */
+    @SafeVarargs
+    public static <T> T element(Supplier<T> ...suppliers) {
+        int k = integer(suppliers.length);
+        return suppliers[k].get();
     }
 
     /**

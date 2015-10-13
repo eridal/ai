@@ -24,8 +24,18 @@ public final class Algorithm<C extends Creature> {
         return this;
     }
 
+    /**
+     * @param size quantity of creatures to be born
+     * @param factory factory method
+     */
     public Algorithm<C> init(final int size, final Supplier<C> factory) {
-        return init(Init.FACTORY(size, factory));
+        this.init = Init.FACTORY(size, factory);
+        return this;
+    }
+
+    public Algorithm<C> init(final C[] creatures) {
+        this.init = Init.FROM(creatures);
+        return this;
     }
 
     public Algorithm<C> problem(final Problem<C> problem) {
@@ -43,8 +53,12 @@ public final class Algorithm<C extends Creature> {
         return this;
     }
 
+    /**
+     * @param px probability to mutate
+     */
     public Algorithm<C> mutate(final double px, final Mutator<C> mutator) {
-        return mutate(Mutator.RAND(px, mutator));
+        this.mutator = Mutator.RAND(px, mutator);
+        return this;
     }
 
     public Algorithm<C> mutate(final Mutator<C> mutator) {
@@ -52,45 +66,76 @@ public final class Algorithm<C extends Creature> {
         return this;
     }
 
-    public Algorithm<C> elite(Elite<C> elite) {
+    public Algorithm<C> elite(final Elite<C> elite) {
         this.elite = elite;
         return this;
     }
 
-    public Algorithm<C> elite(final double ratio) {
-        return elite(Elite.BEST(ratio));
+    /**
+     * Percentage of the population's best creatures that should survive
+     * to the next round
+     */
+    public Algorithm<C> elite(final double ratio) { 
+        this.elite = ratio > 0 ? Elite.BEST(ratio) : Elite.NONE();
+        return this;
     }
 
+    /**
+     * Quantity of the best creatures that should survive
+     * to the next round
+     */
     public Algorithm<C> elite(final int size) {
-        if (size == 0) {
-            return elite(Elite.NONE());
-        }
-        if (size == 1) {
-            return elite(Elite.BEST());
-        }
-        return elite(Elite.BEST(size));
+        this.elite = size == 0 ? Elite.NONE() :
+                     size == 1 ? Elite.BEST() : Elite.BEST(size) ;
+        return this;
     }
 
+    public Algorithm<C> stop(final Stop<C> stop) {
+        this.stop = stop;
+        return this;
+    }
+
+    /**
+     * Stops executing when ANY of the given {@link Stop} criteria is met.
+     */
     @SafeVarargs
     public final Algorithm<C> stop(final Stop<C> ...stops) {
         this.stop = Stop.ANY(stops);
         return this;
     }
 
-    public Algorithm<C> stop(Predicate<C> when) {
-        return stop(Stop.WHEN(when));
+    /**
+     * Stops executing WHEN the given criteria is met
+     */
+    public Algorithm<C> stop(final Predicate<C> when) {
+        this.stop = Stop.WHEN(when);
+        return this;
     }
 
+    /**
+     * Stops when any {@link Creature} reaches the given fitness value.
+     */
     public Algorithm<C> stop(final double targetFitness) {
-        return stop(Stop.FITNESS(targetFitness));
+        this.stop = Stop.FITNESS(targetFitness);
+        return this;
+    }
+
+    /**
+     * Stops executing when time is exhausted
+     */
+    public Algorithm<C> stop(long duration, TimeUnit unit) {
+        this.stop = Stop.TIME(duration, unit);
+        return this;
     }
 
     public Algorithm<C> maximize(final double fitness) {
-        return problem(Problem.MAXIMIZE()).stop(fitness);
+        return problem(Problem.MAXIMIZE())
+                .stop(fitness);
     }
 
     public Algorithm<C> minimize(final double fitness) {
-        return problem(Problem.MINIMIZE()).stop(fitness);
+        return problem(Problem.MINIMIZE())
+                .stop(fitness);
     }
 
     public Algorithm<C> chain(Chain<C> chain) {
@@ -105,7 +150,7 @@ public final class Algorithm<C extends Creature> {
         Objects.requireNonNull(mutator, "Mutator requred");
 
         if (null == selector) {
-            selector = Selector.CSNE();
+            selector = Selector.RANKING();
         }
 
         if (null == problem) {
@@ -127,6 +172,14 @@ public final class Algorithm<C extends Creature> {
 
         for (long loop = 0; ; loop++) {
 
+            if (null != chain) {
+                chain.tap(
+                    loop,
+                    creatures,
+                    problem.best(creatures)
+                );
+            }
+
             Stream<C> flow;
 
             flow = selector.select(creatures, problem);
@@ -146,14 +199,9 @@ public final class Algorithm<C extends Creature> {
                     loop,
                     end - start,
                     creatures,
-                    problem.best(creatures),
+                    problem.best (creatures),
                     problem.worst(creatures)
                 );
-            }
-
-            if (null != chain) {
-                final C best = problem.best(creatures);
-                chain.tap(loop, creatures, best);
             }
         }
     }
